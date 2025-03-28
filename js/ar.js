@@ -26,50 +26,7 @@ const light = new BABYLON.HemisphericLight(
   scene
 );
 light.intensity = 1;
-function createTextOnWall(name, position, rotation) {
-  const textPlane = BABYLON.MeshBuilder.CreatePlane(
-    name,
-    { width: 3, height: 1 },
-    scene
-  );
-  textPlane.position = position;
-  textPlane.rotation = rotation;
 
-  // Create dynamic texture for text
-  const textTexture =
-    BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(textPlane);
-
-  // Create text block
-  const wallText = new BABYLON.GUI.TextBlock();
-  // wallText.text = "Earthquake Safety Zone";
-  wallText.color = "white";
-  wallText.fontSize = 150;
-  wallText.outlineWidth = 4;
-  wallText.outlineColor = "black";
-  textTexture.addControl(wallText);
-
-  return textPlane;
-}
-createTextOnWall(
-  "Earthquake Safety Zone",
-  new BABYLON.Vector3(0, 2, -4.95),
-  new BABYLON.Vector3(0, 0, 0)
-); // Back wall
-createTextOnWall(
-  "Earthquake Safety Zone",
-  new BABYLON.Vector3(0, 1, 4.95),
-  new BABYLON.Vector3(0, Math.PI, 0)
-); // Front wall
-createTextOnWall(
-  "Earthquake Safety Zone",
-  new BABYLON.Vector3(-4.95, 2, 0),
-  new BABYLON.Vector3(0, -Math.PI / 2, 0)
-); // Left wall
-createTextOnWall(
-  "Earthquake Safety Zone",
-  new BABYLON.Vector3(4.95, 2, 0),
-  new BABYLON.Vector3(0, Math.PI / 2, 0)
-);
 // --- Build the House ---
 // Floor
 const floor = BABYLON.MeshBuilder.CreateGround(
@@ -100,6 +57,28 @@ wall3.rotation.y = Math.PI / 2; // Left wall
 
 const wall4 = wall1.clone("wall4");
 wall4.position = new BABYLON.Vector3(0, 1.5, 5); // Front wall
+
+// ceiling
+const ceiling = BABYLON.MeshBuilder.CreateBox(
+  "ceiling",
+  { width: 10, height: 0.1, depth: 10 },
+  scene
+);
+ceiling.position.y = 3; // Position at top of walls
+ceiling.material = wall1.material.clone("ceilingMat"); // Clone existing wall material
+ceiling.material.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85); // ceiling
+ceiling.material.backFaceCulling = false; // Show both sides
+ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Add self-illumination
+ceiling.material.specularPower = 50; // Better light reflection
+
+// --- Add directional light inside the room ---
+const roomLight = new BABYLON.DirectionalLight(
+  "roomLight",
+  new BABYLON.Vector3(0, 1, 0), // Shining downward
+  scene
+);
+roomLight.intensity = 0.7;
+roomLight.parent = ceiling; // Light moves with ceiling
 
 // Table (safe spot)
 const table = BABYLON.MeshBuilder.CreateBox(
@@ -141,103 +120,12 @@ function startEarthquake() {
     isEarthquake = false;
     clearInterval(shakeTimer);
     camera.position = new BABYLON.Vector3(0, 1.6, -5); // Reset camera
-    showDebrief(); // Show debrief after
   }, 8000);
-}
-
-// --- GUI Setup ---
-// Fullscreen UI for text/buttons
-const ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-// Instructions
-const instructionText = new BABYLON.GUI.TextBlock();
-instructionText.text = "Drop, Cover, and Hold On!";
-instructionText.color = "white";
-instructionText.fontSize = 30;
-instructionText.isVisible = false;
-ui.addControl(instructionText);
-
-// function showInstructions() {
-//   wallText.text = "Drop, Cover, and Hold On!";
-//   wallText.color = "red";
-//   // instructionText.isVisible = true;
-//   // setTimeout(() => (instructionText.isVisible = false), 5000); // Show for 5 sec
-// }
-
-// Safe Spot Button
-const safeButton = BABYLON.GUI.Button.CreateSimpleButton(
-  "safeButton",
-  "Go Under Table"
-);
-safeButton.width = "200px";
-safeButton.height = "50px";
-safeButton.color = "white";
-safeButton.background = "green";
-safeButton.isVisible = false;
-ui.addControl(safeButton);
-
-// safeButton.onPointerUpObservable.add(() => {
-//   camera.position = new BABYLON.Vector3(0, 0.5, 0); // Move under table
-//   safeButton.isVisible = false;
-// });
-const playButton = BABYLON.GUI.Button.CreateSimpleButton(
-  "playButton",
-  "START TRAINING"
-);
-playButton.width = "300px";
-playButton.height = "80px";
-playButton.color = "white";
-playButton.background = "green";
-playButton.fontSize = "24px";
-playButton.cornerRadius = 10;
-playButton.isVisible = true;
-playButton.onPointerUpObservable.add(() => {
-  playButton.isVisible = false; // Hide the button when clicked
-  startSimulation(); // Start the earthquake simulation
-});
-
-// ui.addControl(playButton);
-// Replay Button
-const replayButton = BABYLON.GUI.Button.CreateSimpleButton(
-  "replayButton",
-  "Try Again"
-);
-replayButton.width = "200px";
-replayButton.height = "50px";
-replayButton.color = "white";
-replayButton.background = "blue";
-replayButton.isVisible = false;
-// ui.addControl(replayButton);
-
-replayButton.onPointerUpObservable.add(() => {
-  camera.position = new BABYLON.Vector3(0, 1.6, -5); // Reset
-  replayButton.isVisible = false;
-  startSimulation(); // Restart
-});
-
-// Debrief Text
-const debriefText = new BABYLON.GUI.TextBlock();
-debriefText.text = "Good job! Stay safe next time!";
-debriefText.color = "white";
-debriefText.fontSize = 30;
-debriefText.isVisible = false;
-ui.addControl(debriefText);
-
-function showDebrief() {
-  debriefText.isVisible = true;
-  replayButton.isVisible = true;
-
-  wallText.text = "Earthquake Safety Zone";
-  wallText.color = "white";
-  setTimeout(() => (debriefText.isVisible = false), 5000); // Hide after 5 sec
 }
 
 // --- Start the Simulation ---
 function startSimulation() {
   startEarthquake();
-  showInstructions();
-  playButton.isVisible = false;
-  safeButton.isVisible = true;
 }
 
 // --- WebXR for VR (Meta Quest) ---
