@@ -7,16 +7,40 @@ const scene = new BABYLON.Scene(engine);
 
 // --- Camera Setup ---
 // Add a camera and allow it to control the canvas
-const camera = new BABYLON.ArcRotateCamera(
+//adding person instraction
+// const camera = new BABYLON.ArcRotateCamera(
+//   "camera",
+//   -Math.PI / 2,
+//   Math.PI / 2.5,
+//   15,
+//   new BABYLON.Vector3(0, 0, 0)
+// );
+
+// i am adding wsad key controls
+// you can use W in order to move forward, A to move left and S to move back and D to move right like in video game, it helps me to control me from my keyboard without use of headset which is helpful
+const camera = new BABYLON.FreeCamera(
   "camera",
-  -Math.PI / 2,
-  Math.PI / 2.5,
-  15,
-  new BABYLON.Vector3(0, 0, 0)
+  new BABYLON.Vector3(0, 1.6, -4), // Start at eye level near back wall
+  scene
 );
-// STEP 11: Restrict camera from going below the ground
-camera.upperBetaLimit = Math.PI / 2 - 0.05;
+//  Restrict camera from going below the ground
+// camera.upperBetaLimit = Math.PI / 2 - 0.05;
+// camera.attachControl(canvas, true);
+camera.setTarget(new BABYLON.Vector3(0, 1.6, 0)); //  toward center
 camera.attachControl(canvas, true);
+camera.keysUp = [87]; // W key
+camera.keysDown = [83]; // S key
+camera.keysLeft = [65]; // A key
+camera.keysRight = [68]; // D key
+camera.speed = 0.5; // Movement speed
+camera.angularSensibility = 3000;
+
+// ENABLE COLLISION
+scene.collisionsEnabled = true;
+camera.checkCollisions = true;
+camera.applyGravity = true;
+scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+camera.ellipsoid = new BABYLON.Vector3(0.5, 0.8, 0.5);
 
 // --- Lighting ---
 // Simple light from above
@@ -35,7 +59,9 @@ const floor = BABYLON.MeshBuilder.CreateGround(
   scene
 );
 floor.material = new BABYLON.StandardMaterial("floorMat", scene);
-floor.material.diffuseColor = new BABYLON.Color3(0.6, 0.7, 0.5); // floor color
+floor.material.diffuseColor = new BABYLON.Color3(0.6, 0.7, 0.5);
+floor.checkCollisions = true;
+// floor color
 
 // Walls (simple boxes)
 const wall1 = BABYLON.MeshBuilder.CreateBox(
@@ -46,18 +72,21 @@ const wall1 = BABYLON.MeshBuilder.CreateBox(
 wall1.position = new BABYLON.Vector3(0, 1.5, -5); // Back wall
 wall1.material = new BABYLON.StandardMaterial("wallMat", scene);
 wall1.material.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.8);
+wall1.checkCollisions = true; // CHECKING COLLISION FOR WaLL 1
 
 const wall2 = wall1.clone("wall2");
 wall2.position = new BABYLON.Vector3(5, 1.5, 0);
 wall2.rotation.y = Math.PI / 2; // Right wall
+wall2.checkCollisions = true;
 
 const wall3 = wall1.clone("wall3");
 wall3.position = new BABYLON.Vector3(-5, 1.5, 0);
 wall3.rotation.y = Math.PI / 2; // Left wall
+wall3.checkCollisions = true;
 
 const wall4 = wall1.clone("wall4");
 wall4.position = new BABYLON.Vector3(0, 1.5, 5); // Front wall
-
+wall4.checkCollisions = true;
 // ceiling
 const ceiling = BABYLON.MeshBuilder.CreateBox(
   "ceiling",
@@ -70,6 +99,7 @@ ceiling.material.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85); // ceiling
 ceiling.material.backFaceCulling = false; // Show both sides
 ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Add self-illumination
 ceiling.material.specularPower = 50; // Better light reflection
+ceiling.checkCollisions = true;
 
 // --- Add directional light inside the room ---
 const roomLight = new BABYLON.DirectionalLight(
@@ -99,6 +129,7 @@ tableTop.position = new BABYLON.Vector3(
 tableTop.material = new BABYLON.StandardMaterial("tableMat", scene);
 // table color
 tableTop.material.diffuseColor = new BABYLON.Color3(0.6, 0.3, 0); // Brownish
+tableTop.checkCollisions = true;
 
 const leg1 = BABYLON.MeshBuilder.CreateBox(
   "leg1",
@@ -108,15 +139,19 @@ const leg1 = BABYLON.MeshBuilder.CreateBox(
 // x, y, z
 leg1.position = new BABYLON.Vector3(0.9, 0.7, 0.65); // Front-right
 leg1.material = tableTop.material;
+leg1.checkCollisions = true;
 
 const leg2 = leg1.clone("leg2");
 leg2.position = new BABYLON.Vector3(0.9, 0.7, -0.65); // Back-right
+leg2.checkCollisions = true;
 
 const leg3 = leg1.clone("leg3");
 leg3.position = new BABYLON.Vector3(-0.9, 0.7, 0.65); // Front-left
+leg3.checkCollisions = true;
 
 const leg4 = leg1.clone("leg4");
 leg4.position = new BABYLON.Vector3(-0.9, 0.7, -0.65); // Back-left
+leg4.checkCollisions = true;
 
 // adding buttons
 function button() {
@@ -167,10 +202,26 @@ const earthquakeSound = new BABYLON.Sound(
   }
 );
 
-function startEarthquake() {
+// adding sound one more time https://doc.babylonjs.com/features/introductionToFeatures/chap2/sound/
+async function initAudio() {
+  const audioEngine = await BABYLON.CreateAudioEngineAsync();
+  await audioEngine.unlockAsync();
+
+  // Audio engine is ready to play sounds ...
+}
+
+// adding sou
+
+async function startEarthquake() {
   isEarthquake = true;
   const activeCamera = scene.activeCamera; // current active camera
   // play sound while invoking this function
+  // todo not ablet o get the sound
+  // const sound = await BABYLON.CreateSoundAsync(
+  //   "sound",
+  //   "https://babylon-final-project.vercel.app/media/earthquake.mp3"
+  // );
+  // sound.play();
   if (earthquakeSound.isReady()) {
     earthquakeSound.setVolume(1.0);
     earthquakeSound.play();
