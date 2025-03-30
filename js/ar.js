@@ -154,6 +154,7 @@ leg4.position = new BABYLON.Vector3(-0.9, 0.7, -0.65); // Back-left
 leg4.checkCollisions = true;
 
 // adding buttons
+let frontText;
 function button() {
   const startButtonFront = BABYLON.MeshBuilder.CreateBox(
     "startButtonFront",
@@ -172,13 +173,13 @@ function button() {
   );
   const guiTexture =
     BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-  const buttonTextFront = new BABYLON.GUI.TextBlock();
-  buttonTextFront.text = "Start Simulation";
-  buttonTextFront.color = "white";
-  buttonTextFront.fontSize = 24;
-  guiTexture.addControl(buttonTextFront);
-  buttonTextFront.linkWithMesh(startButtonFront);
-  buttonTextFront.linkOffsetY = -50;
+  frontText = new BABYLON.GUI.TextBlock();
+  frontText.text = "Start Simulation";
+  frontText.color = "white";
+  frontText.fontSize = 24;
+  guiTexture.addControl(frontText);
+  frontText.linkWithMesh(startButtonFront);
+  frontText.linkOffsetY = -50;
 }
 button();
 // --- Earthquake Effects ---
@@ -222,6 +223,12 @@ async function startEarthquake() {
   //   "https://babylon-final-project.vercel.app/media/earthquake.mp3"
   // );
   // sound.play();
+
+  if (isEarthquake) {
+    frontText.text = "Drop, Cover and Hold On"; // updating the text block
+    frontText.color = "red";
+  }
+
   if (earthquakeSound.isReady()) {
     earthquakeSound.setVolume(1.0);
     earthquakeSound.play();
@@ -232,7 +239,9 @@ async function startEarthquake() {
   } else {
     console.warn("Earthquake sound not ready yet!");
   }
+
   // Shake camera every 50ms
+
   shakeTimer = setInterval(() => {
     if (isEarthquake) {
       activeCamera.position.x += (Math.random() - 0.5) * 0.4; // Small random shakes
@@ -245,6 +254,8 @@ async function startEarthquake() {
   const originalIntensity = light.intensity;
   const flickerTimer = setInterval(() => {
     if (isEarthquake) {
+      // adding sound as well
+
       light.intensity = originalIntensity * (0.6 + Math.random() * 0.7); // Dim and brighten
     } else {
       light.intensity = originalIntensity;
@@ -255,6 +266,8 @@ async function startEarthquake() {
   // Stop after 8 seconds (short for testing)
   setTimeout(() => {
     isEarthquake = false;
+    frontText.text = "Start Simulation";
+    frontText.color = "white";
     clearInterval(shakeTimer);
     earthquakeSound.stop(); // let's stop sound when earthquake is stopped
     if (activeCamera) {
