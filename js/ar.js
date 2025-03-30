@@ -154,7 +154,7 @@ const earthquakeSound = new BABYLON.Sound(
   "../media/earthquake.mp3",
   scene,
   () => {
-    console.log();
+    // media is not loading, don't know why
     console.log("Earthquake sound loaded successfully!", earthquakeSound);
   }, // Callback when sound is ready
   {
