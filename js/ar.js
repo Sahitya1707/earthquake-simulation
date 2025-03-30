@@ -20,7 +20,7 @@ const scene = new BABYLON.Scene(engine);
 // you can use W in order to move forward, A to move left and S to move back and D to move right like in video game, it helps me to control me from my keyboard without use of headset which is helpful
 const camera = new BABYLON.FreeCamera(
   "camera",
-  new BABYLON.Vector3(0, 1.6, -4), // Start at eye level near back wall
+  new BABYLON.Vector3(0, 1.6, -2), // Start at eye level near back wall
   scene
 );
 //  Restrict camera from going below the ground
@@ -228,7 +228,7 @@ async function startEarthquake() {
     frontText.text = "Drop, Cover and Hold On"; // updating the text block
     frontText.color = "red";
   }
-
+  // todo not workings
   if (earthquakeSound.isReady()) {
     earthquakeSound.setVolume(1.0);
     earthquakeSound.play();
@@ -269,9 +269,10 @@ async function startEarthquake() {
     frontText.text = "Start Simulation";
     frontText.color = "white";
     clearInterval(shakeTimer);
+    // todo sound not workig even not loading inside the network
     earthquakeSound.stop(); // let's stop sound when earthquake is stopped
     if (activeCamera) {
-      activeCamera.position = new BABYLON.Vector3(0, 1.6, -5); // Reset camera
+      activeCamera.position = new BABYLON.Vector3(0, 1.6, -2); // Reset camera
     }
   }, 8000);
 }
