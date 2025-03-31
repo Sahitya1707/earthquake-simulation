@@ -23,17 +23,27 @@ const camera = new BABYLON.FreeCamera(
   new BABYLON.Vector3(0, 1.6, -2), // Start at eye level near back wall
   scene
 );
+camera.setTarget(new BABYLON.Vector3(0, 1.6, 0));
+camera.attachControl(canvas, true);
+
+// enable collisions
+scene.collisionsEnabled = true;
+camera.checkCollisions = true;
+camera.applyGravity = true;
+scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+camera.ellipsoid = new BABYLON.Vector3(0.5, 0.8, 0.5);
 //  Restrict camera from going below the ground
 // camera.upperBetaLimit = Math.PI / 2 - 0.05;
 // camera.attachControl(canvas, true);
-camera.setTarget(new BABYLON.Vector3(0, 1.6, 0)); //  toward center
-camera.attachControl(canvas, true);
-camera.keysUp = [87]; // W key
-camera.keysDown = [83]; // S key
-camera.keysLeft = [65]; // A key
-camera.keysRight = [68]; // D key
-camera.speed = 0.5; // Movement speed
-camera.angularSensibility = 3000;
+// todo not able to track while user was inside the table
+// camera.setTarget(new BABYLON.Vector3(0, 1.6, 0)); //  toward center
+// camera.attachControl(canvas, true);
+// camera.keysUp = [87]; // W key
+// camera.keysDown = [83]; // S key
+// camera.keysLeft = [65]; // A key
+// camera.keysRight = [68]; // D key
+// camera.speed = 0.5; // Movement speed
+// camera.angularSensibility = 3000;
 
 // ENABLE COLLISION
 scene.collisionsEnabled = true;
@@ -153,6 +163,29 @@ const leg4 = leg1.clone("leg4");
 leg4.position = new BABYLON.Vector3(-0.9, 0.7, -0.65); // Back-left
 leg4.checkCollisions = true;
 
+const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
+  "debriefPlane",
+  { width: 2, height: 1 },
+  scene
+);
+
+// adding defrief
+debriefPlane.parent = tableTop;
+debriefPlane.position.y = 1.0;
+debriefPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL; // facing to the user
+
+const debriefTexture =
+  BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(debriefPlane);
+const debriefText = new BABYLON.GUI.TextBlock();
+debriefText.text = ""; // making it empty at first
+debriefText.color = "white";
+debriefText.fontSize = 40;
+debriefText.textWrapping = true;
+debriefTexture.addControl(debriefText);
+
+// Hiding it initially
+debriefPlane.isVisible = false;
+
 // adding buttons
 let frontText;
 function button() {
@@ -216,6 +249,7 @@ async function initAudio() {
 async function startEarthquake() {
   isEarthquake = true;
   const activeCamera = scene.activeCamera; // current active camera
+
   // play sound while invoking this function
   // todo not ablet o get the sound
   // const sound = await BABYLON.CreateSoundAsync(
@@ -223,6 +257,9 @@ async function startEarthquake() {
   //   "https://babylon-final-project.vercel.app/media/earthquake.mp3"
   // );
   // sound.play();
+
+  // Hide debriefing screen at start
+  debriefPlane.isVisible = false;
 
   if (isEarthquake) {
     frontText.text = "Drop, Cover and Hold On"; // updating the text block
@@ -273,6 +310,20 @@ async function startEarthquake() {
     earthquakeSound.stop(); // let's stop sound when earthquake is stopped
     if (activeCamera) {
       activeCamera.position = new BABYLON.Vector3(0, 1.6, -2); // Reset camera
+
+      console.log("Camera position at end:", activeCamera.position);
+
+      const isUnderTable = false;
+      // setting it as false
+      // i am not sure how to track the user current positon, i know i need x, y, and z value so that i can track if they are inside table or not but i am not sure hw to track it -> setting it to false
+      debriefPlane.isVisible = true;
+      if (isUnderTable) {
+        debriefText.text = "You Survived! Well Done!";
+        debriefText.color = "green";
+      } else {
+        debriefText.text = "Try Again! Get Under the Table Next Time.";
+        debriefText.color = "red";
+      }
     }
   }, 8000);
 }
@@ -309,3 +360,6 @@ window.addEventListener("resize", () => engine.resize());
 
 // Kick it off!
 // startSimulation();
+
+// what i am not able to do
+// not able to track the user current position so that I can know if they are
