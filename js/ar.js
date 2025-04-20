@@ -72,7 +72,7 @@ ceiling.position.y = 3;
 ceiling.material = wallMaterial.clone("ceilingMat");
 ceiling.material.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85);
 ceiling.material.backFaceCulling = false;
-ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.7, 0.3);
+ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0.3);
 ceiling.material.specularPower = 50;
 ceiling.checkCollisions = true;
 
@@ -114,6 +114,42 @@ BABYLON.SceneLoader.Append(
     console.error("Failed to load model:", message);
   }
 );
+
+// adding other modal
+
+// adding other modal
+
+let plantMesh;
+
+Promise.all([
+  BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "plant.glb", scene),
+  // BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "desk_lamp.glb", scene),
+  // BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "pen.glb", scene),
+]).then(([plant, lamp, pen]) => {
+  const tableTopY = 1;
+
+  // --- Plant ---
+  plantMesh = plant.meshes[0];
+  plantMesh.position = new BABYLON.Vector3(-0.6, 1.9, 0.5);
+  plantMesh.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
+  plantMesh.receiveShadows = false;
+
+  // // --- Lamp ---
+  // lamp.meshes.forEach((mesh) => {
+  //   mesh.position = new BABYLON.Vector3(0.6, 0.5, 0.2);
+  //   mesh.scaling = new BABYLON.Vector3(0.8, 1, 1);
+  //   mesh.receiveShadows = false;
+  // });
+
+  // --- Pen ---
+  // pen.meshes.forEach((mesh) => {
+  //   mesh.position = new BABYLON.Vector3(0, 3, -0.3);
+  //   mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+  //   mesh.receiveShadows = false;
+  // });
+
+  console.log("All models loaded and placed.");
+});
 
 // --- Debrief Plane ---
 const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
