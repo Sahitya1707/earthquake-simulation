@@ -196,6 +196,9 @@ function startEarthquake() {
   shakeTimer = setInterval(() => {
     if (isEarthquake) {
       activeCamera.position.x += (Math.random() - 0.5) * 0.4;
+      // added all kind of simulation on all axis a/c to professor instruction
+      activeCamera.position.y += (Math.random() - 0.5) * 0.2;
+      activeCamera.position.z += (Math.random() - 0.5) * 0.4;
     }
   }, 50);
 
