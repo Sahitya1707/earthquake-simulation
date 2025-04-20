@@ -40,6 +40,7 @@ const floor = BABYLON.MeshBuilder.CreateGround(
 floor.material = new BABYLON.StandardMaterial("floorMat", scene);
 floor.material.diffuseColor = new BABYLON.Color3(0.6, 0.7, 0.5);
 floor.checkCollisions = true;
+floor.receiveShadows = true;
 
 const wallMaterial = new BABYLON.StandardMaterial("wallMat", scene);
 wallMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.8);
@@ -71,17 +72,25 @@ ceiling.position.y = 3;
 ceiling.material = wallMaterial.clone("ceilingMat");
 ceiling.material.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85);
 ceiling.material.backFaceCulling = false;
-ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.7, 0.3);
 ceiling.material.specularPower = 50;
 ceiling.checkCollisions = true;
 
 const roomLight = new BABYLON.DirectionalLight(
   "roomLight",
-  new BABYLON.Vector3(0, 1, 0),
+  new BABYLON.Vector3(-1, -2, -1),
   scene
 );
+roomLight.position = new BABYLON.Vector3(5, 5, -5); // cast angle
 roomLight.intensity = 0.7;
 roomLight.parent = ceiling;
+
+// --- Shadow Generator ---
+const shadowGenerator = new BABYLON.ShadowGenerator(1024, roomLight);
+shadowGenerator.useBlurExponentialShadowMap = false;
+shadowGenerator.useExponentialShadowMap = false;
+shadowGenerator.usePoissonSampling = false;
+shadowGenerator.setDarkness(0.8);
 
 // --- Imported GLB Table ---
 BABYLON.SceneLoader.Append(
@@ -94,6 +103,10 @@ BABYLON.SceneLoader.Append(
     importedTable.scaling = new BABYLON.Vector3(3, 2, 3);
     importedTable.checkCollisions = true;
     importedTable.name = "importedTable";
+
+    shadowGenerator.addShadowCaster(importedTable, true);
+    importedTable.receiveShadows = true;
+
     console.log("GLB table model loaded successfully!");
   },
   null,
