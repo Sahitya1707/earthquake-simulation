@@ -1,14 +1,14 @@
 // Get the canvas from HTML
 const canvas = document.getElementById("renderCanvas");
+// Start Babylon.js engine
 const engine = new BABYLON.Engine(canvas, true);
+// Create a scene where everything happens
 const scene = new BABYLON.Scene(engine);
 
 let earthquakeSound;
 let audioEngine;
-let plantMesh;
-let importedTable;
 
-// Camera
+// --- Camera Setup ---
 const camera = new BABYLON.FreeCamera(
   "camera",
   new BABYLON.Vector3(0, 1.6, -2),
@@ -16,13 +16,14 @@ const camera = new BABYLON.FreeCamera(
 );
 camera.setTarget(new BABYLON.Vector3(0, 1.6, 0));
 camera.attachControl(canvas, true);
+
 scene.collisionsEnabled = true;
 camera.checkCollisions = true;
 camera.applyGravity = true;
 scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
 camera.ellipsoid = new BABYLON.Vector3(0.5, 0.8, 0.5);
 
-// Light
+// --- Lighting ---
 const light = new BABYLON.HemisphericLight(
   "light",
   new BABYLON.Vector3(0, 1, 0),
@@ -30,7 +31,7 @@ const light = new BABYLON.HemisphericLight(
 );
 light.intensity = 1;
 
-// Floor
+// --- Floor & Walls ---
 const floor = BABYLON.MeshBuilder.CreateGround(
   "floor",
   { width: 10, height: 10 },
@@ -41,9 +42,9 @@ floor.material.diffuseColor = new BABYLON.Color3(0.6, 0.7, 0.5);
 floor.checkCollisions = true;
 floor.receiveShadows = true;
 
-// Walls
 const wallMaterial = new BABYLON.StandardMaterial("wallMat", scene);
 wallMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.8);
+
 function createWall(name, position, rotationY = 0) {
   const wall = BABYLON.MeshBuilder.CreateBox(
     name,
@@ -56,12 +57,12 @@ function createWall(name, position, rotationY = 0) {
   wall.checkCollisions = true;
   return wall;
 }
+
 createWall("wall1", new BABYLON.Vector3(0, 1.5, -5));
 createWall("wall2", new BABYLON.Vector3(5, 1.5, 0), Math.PI / 2);
 createWall("wall3", new BABYLON.Vector3(-5, 1.5, 0), Math.PI / 2);
 createWall("wall4", new BABYLON.Vector3(0, 1.5, 5));
 
-// Ceiling
 const ceiling = BABYLON.MeshBuilder.CreateBox(
   "ceiling",
   { width: 10, height: 0.1, depth: 10 },
@@ -75,45 +76,82 @@ ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0.3);
 ceiling.material.specularPower = 50;
 ceiling.checkCollisions = true;
 
-// Directional Light and Shadow
 const roomLight = new BABYLON.DirectionalLight(
   "roomLight",
   new BABYLON.Vector3(-1, -2, -1),
   scene
 );
-roomLight.position = new BABYLON.Vector3(5, 5, -5);
+roomLight.position = new BABYLON.Vector3(5, 5, -5); // cast angle
 roomLight.intensity = 0.7;
 roomLight.parent = ceiling;
 
+// --- Shadow Generator ---
 const shadowGenerator = new BABYLON.ShadowGenerator(1024, roomLight);
 shadowGenerator.useBlurExponentialShadowMap = false;
 shadowGenerator.useExponentialShadowMap = false;
 shadowGenerator.usePoissonSampling = false;
 shadowGenerator.setDarkness(0.8);
 
-// Table
-BABYLON.SceneLoader.Append("/models/", "table.glb", scene, function (scene) {
-  importedTable = scene.meshes[scene.meshes.length - 1];
-  importedTable.position = new BABYLON.Vector3(0, 1, 0.5);
-  importedTable.scaling = new BABYLON.Vector3(3, 2, 3);
-  importedTable.checkCollisions = true;
-  importedTable.name = "importedTable";
-  shadowGenerator.addShadowCaster(importedTable, true);
-  importedTable.receiveShadows = true;
-  console.log("GLB table model loaded successfully!");
-});
+// --- Imported GLB Table ---
+BABYLON.SceneLoader.Append(
+  "/models/",
+  "table.glb",
+  scene,
+  function (scene) {
+    const importedTable = scene.meshes[scene.meshes.length - 1];
+    importedTable.position = new BABYLON.Vector3(0, 1, 0.5);
+    importedTable.scaling = new BABYLON.Vector3(3, 2, 3);
+    importedTable.checkCollisions = true;
+    importedTable.name = "importedTable";
 
-// Plant
-BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "plant.glb", scene).then(
-  (result) => {
-    plantMesh = result.meshes[0];
-    plantMesh.position = new BABYLON.Vector3(-0.6, 1.9, 0.5);
-    plantMesh.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
-    plantMesh.receiveShadows = false;
+    shadowGenerator.addShadowCaster(importedTable, true);
+    importedTable.receiveShadows = true;
+
+    console.log("GLB table model loaded successfully!");
+  },
+  null,
+  function (scene, message) {
+    console.error("Failed to load model:", message);
   }
 );
 
-// Debrief Panel
+// adding other modal
+
+// adding other modal
+
+let plantMesh;
+
+Promise.all([
+  BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "plant.glb", scene),
+  // BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "desk_lamp.glb", scene),
+  // BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "pen.glb", scene),
+]).then(([plant, lamp, pen]) => {
+  const tableTopY = 1;
+
+  // --- Plant ---
+  plantMesh = plant.meshes[0];
+  plantMesh.position = new BABYLON.Vector3(-0.6, 1.9, 0.5);
+  plantMesh.scaling = new BABYLON.Vector3(0.6, 0.6, 0.6);
+  plantMesh.receiveShadows = false;
+
+  // // --- Lamp ---
+  // lamp.meshes.forEach((mesh) => {
+  //   mesh.position = new BABYLON.Vector3(0.6, 0.5, 0.2);
+  //   mesh.scaling = new BABYLON.Vector3(0.8, 1, 1);
+  //   mesh.receiveShadows = false;
+  // });
+
+  // --- Pen ---
+  // pen.meshes.forEach((mesh) => {
+  //   mesh.position = new BABYLON.Vector3(0, 3, -0.3);
+  //   mesh.scaling = new BABYLON.Vector3(1, 1, 1);
+  //   mesh.receiveShadows = false;
+  // });
+
+  console.log("All models loaded and placed.");
+});
+
+// --- Debrief Plane ---
 const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
   "debriefPlane",
   { width: 2, height: 1 },
@@ -121,6 +159,7 @@ const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
 );
 debriefPlane.position = new BABYLON.Vector3(0, 2, 0);
 debriefPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
 const debriefTexture =
   BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(debriefPlane);
 const debriefText = new BABYLON.GUI.TextBlock();
@@ -131,7 +170,7 @@ debriefText.textWrapping = true;
 debriefTexture.addControl(debriefText);
 debriefPlane.isVisible = false;
 
-// Start Button
+// --- Start Button ---
 let frontText;
 function button() {
   const startButtonFront = BABYLON.MeshBuilder.CreateBox(
@@ -162,7 +201,7 @@ function button() {
 }
 button();
 
-// Audio
+// --- Audio Setup ---
 (async () => {
   audioEngine = await BABYLON.CreateAudioEngineAsync();
   earthquakeSound = await BABYLON.CreateSoundAsync(
@@ -174,27 +213,40 @@ button();
   console.log("Audio engine unlocked & earthquake sound ready.");
 })();
 
-// Earthquake Logic
 function startEarthquake() {
   isEarthquake = true;
   const activeCamera = scene.activeCamera;
   debriefPlane.isVisible = false;
 
-  if (!audioEngine.unlocked) audioEngine.unlockAsync();
-  if (earthquakeSound) earthquakeSound.play();
+  if (!audioEngine.unlocked) {
+    audioEngine.unlockAsync();
+  }
+
+  if (earthquakeSound) {
+    earthquakeSound.play();
+    console.log("Earthquake sound is playing...");
+  } else {
+    console.warn("Earthquake sound not ready!");
+  }
+
   frontText.text = "Drop, Cover and Hold On";
   frontText.color = "red";
+
+  // Emergency blinking red light
+  const redLight = new BABYLON.PointLight(
+    "redLight",
+    new BABYLON.Vector3(0, 2.5, 0),
+    scene
+  );
+  redLight.diffuse = new BABYLON.Color3(1, 0, 0);
+  redLight.intensity = 0;
+  redLight.range = 10;
 
   shakeTimer = setInterval(() => {
     if (isEarthquake) {
       activeCamera.position.x += (Math.random() - 0.5) * 0.4;
       activeCamera.position.y += (Math.random() - 0.5) * 0.2;
       activeCamera.position.z += (Math.random() - 0.5) * 0.4;
-
-      if (importedTable) {
-        importedTable.position.x += (Math.random() - 0.5) * 0.1;
-        importedTable.position.z += (Math.random() - 0.5) * 0.1;
-      }
 
       if (plantMesh) {
         plantMesh.rotation.x += (Math.random() - 0.5) * 0.05;
@@ -204,12 +256,27 @@ function startEarthquake() {
   }, 50);
 
   const originalIntensity = light.intensity;
+  let flickerFrame = 0;
   const flickerTimer = setInterval(() => {
-    light.intensity = isEarthquake
-      ? originalIntensity * (0.6 + Math.random() * 0.7)
-      : originalIntensity;
-    if (!isEarthquake) clearInterval(flickerTimer);
-  }, 100);
+    if (!isEarthquake) {
+      clearInterval(flickerTimer);
+      light.intensity = originalIntensity;
+      redLight.intensity = 0;
+      redLight.dispose();
+      return;
+    }
+
+    flickerFrame++;
+
+    // Alternate between white flicker and red blink every 500ms
+    if (flickerFrame % 2 === 0) {
+      light.intensity = 0;
+      redLight.intensity = 1;
+    } else {
+      light.intensity = originalIntensity * (0.4 + Math.random() * 0.4);
+      redLight.intensity = 0;
+    }
+  }, 500);
 
   setTimeout(() => {
     isEarthquake = false;
@@ -218,6 +285,7 @@ function startEarthquake() {
     activeCamera.position = new BABYLON.Vector3(0, 1.6, -2);
     frontText.text = "Start Simulation";
     frontText.color = "white";
+
     debriefPlane.isVisible = true;
     debriefText.text = "Try Again! Get Under the Table Next Time.";
     debriefText.color = "red";
@@ -233,7 +301,9 @@ BABYLON.WebXRSessionManager.IsSessionSupportedAsync("immersive-vr").then(
     if (supported) {
       scene
         .createDefaultXRExperienceAsync({ floorMeshes: [floor] })
-        .then(() => console.log("VR mode ready!"));
+        .then((xr) => {
+          console.log("VR mode ready!");
+        });
     } else {
       console.log("VR not supported, running in browser mode.");
     }
