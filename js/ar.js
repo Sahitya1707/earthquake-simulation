@@ -83,33 +83,24 @@ const roomLight = new BABYLON.DirectionalLight(
 roomLight.intensity = 0.7;
 roomLight.parent = ceiling;
 
-// --- Table Setup ---
-const tableTop = BABYLON.MeshBuilder.CreateBox(
-  "tableTop",
-  { width: 2, height: 0.2, depth: 1.5 },
-  scene
+// --- Imported GLB Table ---
+BABYLON.SceneLoader.Append(
+  "/models/",
+  "table.glb",
+  scene,
+  function (scene) {
+    const importedTable = scene.meshes[scene.meshes.length - 1];
+    importedTable.position = new BABYLON.Vector3(0, 1, 0.5);
+    importedTable.scaling = new BABYLON.Vector3(3, 2, 3);
+    importedTable.checkCollisions = true;
+    importedTable.name = "importedTable";
+    console.log("GLB table model loaded successfully!");
+  },
+  null,
+  function (scene, message) {
+    console.error("Failed to load model:", message);
+  }
 );
-tableTop.position = new BABYLON.Vector3(0, 1.2, 0);
-tableTop.material = new BABYLON.StandardMaterial("tableMat", scene);
-tableTop.material.diffuseColor = new BABYLON.Color3(0.6, 0.3, 0);
-tableTop.checkCollisions = true;
-
-function createTableLeg(name, position) {
-  const leg = BABYLON.MeshBuilder.CreateBox(
-    name,
-    { width: 0.2, height: 1, depth: 0.2 },
-    scene
-  );
-  leg.position = position;
-  leg.material = tableTop.material;
-  leg.checkCollisions = true;
-  return leg;
-}
-
-createTableLeg("leg1", new BABYLON.Vector3(0.9, 0.7, 0.65));
-createTableLeg("leg2", new BABYLON.Vector3(0.9, 0.7, -0.65));
-createTableLeg("leg3", new BABYLON.Vector3(-0.9, 0.7, 0.65));
-createTableLeg("leg4", new BABYLON.Vector3(-0.9, 0.7, -0.65));
 
 // --- Debrief Plane ---
 const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
@@ -117,8 +108,7 @@ const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
   { width: 2, height: 1 },
   scene
 );
-debriefPlane.parent = tableTop;
-debriefPlane.position.y = 1.0;
+debriefPlane.position = new BABYLON.Vector3(0, 2, 0);
 debriefPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
 const debriefTexture =
@@ -196,7 +186,6 @@ function startEarthquake() {
   shakeTimer = setInterval(() => {
     if (isEarthquake) {
       activeCamera.position.x += (Math.random() - 0.5) * 0.4;
-      // added all kind of simulation on all axis a/c to professor instruction
       activeCamera.position.y += (Math.random() - 0.5) * 0.2;
       activeCamera.position.z += (Math.random() - 0.5) * 0.4;
     }
