@@ -412,9 +412,29 @@ function startEarthquake() {
     frontText.text = "Start Simulation";
     frontText.color = "white";
 
+    // calculate if user is inside table boundary at end of simulation
+    // added code to calculate the position but i didnot figured it out even it if working or not, i don't have any device to check it
+    const camPos = camera.position;
+    const tbPos = tableBoundary.position;
+    const halfWidth = 2.5 / 2;
+    const halfHeight = 1.5 / 2;
+
+    const insideBoundary =
+      camPos.x > tbPos.x - halfWidth &&
+      camPos.x < tbPos.x + halfWidth &&
+      camPos.z > tbPos.z - halfHeight &&
+      camPos.z < tbPos.z + halfHeight;
+
     debriefPlane.isVisible = true;
-    debriefText.text = "Try Again! Get Under the Table Next Time.";
-    debriefText.color = "red";
+
+    if (insideBoundary) {
+      debriefText.text = "You Passed the Drill!";
+      debriefText.color = "green";
+    } else {
+      debriefText.text = "Try Again! Get Under the Table Next Time.";
+      debriefText.color = "red";
+    }
+
     dustParticles.stop();
   }, 10000);
 }
