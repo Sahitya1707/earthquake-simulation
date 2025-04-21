@@ -7,6 +7,7 @@ const scene = new BABYLON.Scene(engine);
 
 let earthquakeSound;
 let audioEngine;
+let emergencySound;
 
 // --- Camera Setup ---
 const camera = new BABYLON.FreeCamera(
@@ -101,7 +102,7 @@ dustParticles.particleTexture = new BABYLON.Texture(
   scene
 );
 
-// i tried adding dust particle coming from the top but it was no working as expected.
+// i tried adding dust particle coming from the top but it is not working as expected.
 
 // Where the particles come from
 dustParticles.emitter = new BABYLON.Vector3(0, 2.5, 0); // Center-top of room
@@ -243,6 +244,28 @@ function button() {
 button();
 
 // --- Audio Setup ---
+// emergencySound = await BABYLON.CreateSoundAsync(
+//   "emergency",
+//   "/media/emergency-sound.mp3",
+//   scene,
+//   null,
+//   {
+//     loop: true,
+//     autoplay: false,
+//     spatialSound: false,
+//   }
+// );
+(async () => {
+  audioEngine = await BABYLON.CreateAudioEngineAsync();
+  emergencySound = await BABYLON.CreateSoundAsync(
+    "emergency",
+    "/media/emergency-sound.mp3",
+    scene
+  );
+  await audioEngine.unlockAsync();
+  console.log("Audio engine unlocked & earthquake sound ready.");
+})();
+
 (async () => {
   audioEngine = await BABYLON.CreateAudioEngineAsync();
   earthquakeSound = await BABYLON.CreateSoundAsync(
@@ -262,6 +285,10 @@ function startEarthquake() {
 
   if (!audioEngine.unlocked) {
     audioEngine.unlockAsync();
+  }
+  if (emergencySound) {
+    emergencySound.play();
+    console.log("Emergency alarm playing...");
   }
 
   if (earthquakeSound) {
@@ -323,6 +350,7 @@ function startEarthquake() {
   setTimeout(() => {
     isEarthquake = false;
     clearInterval(shakeTimer);
+    emergencySound.stop();
     earthquakeSound.stop();
     activeCamera.position = new BABYLON.Vector3(0, 1.6, -2);
     frontText.text = "Start Simulation";
