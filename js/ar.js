@@ -72,7 +72,7 @@ ceiling.position.y = 3;
 ceiling.material = wallMaterial.clone("ceilingMat");
 ceiling.material.diffuseColor = new BABYLON.Color3(0.85, 0.85, 0.85);
 ceiling.material.backFaceCulling = false;
-ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.1, 0.3);
+ceiling.material.emissiveColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 ceiling.material.specularPower = 50;
 ceiling.checkCollisions = true;
 
@@ -91,6 +91,47 @@ shadowGenerator.useBlurExponentialShadowMap = false;
 shadowGenerator.useExponentialShadowMap = false;
 shadowGenerator.usePoissonSampling = false;
 shadowGenerator.setDarkness(0.8);
+
+// Create particle system
+const dustParticles = new BABYLON.ParticleSystem("dust", 1000, scene);
+
+// Texture for each particle
+dustParticles.particleTexture = new BABYLON.Texture(
+  "textures/flare.png",
+  scene
+);
+
+// i tried adding dust particle coming from the top but it was no working as expected.
+
+// Where the particles come from
+dustParticles.emitter = new BABYLON.Vector3(0, 2.5, 0); // Center-top of room
+
+// Appearance
+dustParticles.color1 = new BABYLON.Color4(0.4, 0.4, 0.4, 0.2); // soft gray
+dustParticles.color2 = new BABYLON.Color4(0.6, 0.6, 0.6, 0.1); // fade out
+dustParticles.colorDead = new BABYLON.Color4(0.5, 0.5, 0.5, 0); // fully gone
+
+// Size of each particle
+dustParticles.minSize = 0.05;
+dustParticles.maxSize = 0.07;
+
+// How fast particles move
+dustParticles.minEmitPower = 0.1;
+dustParticles.maxEmitPower = 0.3;
+
+// Lifetime
+dustParticles.minLifeTime = 1;
+dustParticles.maxLifeTime = 2;
+
+// Emission rate
+dustParticles.emitRate = 100;
+
+// Spread area
+dustParticles.minEmitBox = new BABYLON.Vector3(-2, 0, -2);
+dustParticles.maxEmitBox = new BABYLON.Vector3(2, 0, 2);
+
+// Gravity
+dustParticles.gravity = new BABYLON.Vector3(0, -0.05, 0);
 
 // --- Imported GLB Table ---
 BABYLON.SceneLoader.Append(
@@ -217,6 +258,7 @@ function startEarthquake() {
   isEarthquake = true;
   const activeCamera = scene.activeCamera;
   debriefPlane.isVisible = false;
+  dustParticles.start();
 
   if (!audioEngine.unlocked) {
     audioEngine.unlockAsync();
@@ -289,7 +331,8 @@ function startEarthquake() {
     debriefPlane.isVisible = true;
     debriefText.text = "Try Again! Get Under the Table Next Time.";
     debriefText.color = "red";
-  }, 8000);
+    dustParticles.stop();
+  }, 10000);
 }
 
 function startSimulation() {
