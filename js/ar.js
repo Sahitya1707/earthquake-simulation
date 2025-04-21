@@ -193,6 +193,25 @@ Promise.all([
   console.log("All models loaded and placed.");
 });
 
+// Add chair and make it fall after earthquake
+let chairMesh = null;
+
+BABYLON.SceneLoader.ImportMeshAsync("", "/models/", "chair.glb", scene).then(
+  (result) => {
+    chairMesh = result.meshes[0];
+    chairMesh.position = new BABYLON.Vector3(0.5, 1.5, 0.2); // near the table
+    chairMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+    chairMesh.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0); // facing inward
+    chairMesh.receiveShadows = true;
+    chairMesh.checkCollisions = true;
+
+    // Add chair to shadow caster if needed
+    shadowGenerator.addShadowCaster(chairMesh, true);
+
+    console.log("Chair added successfully.");
+  }
+);
+
 // --- Debrief Plane ---
 const debriefPlane = BABYLON.MeshBuilder.CreatePlane(
   "debriefPlane",
@@ -297,6 +316,18 @@ function startEarthquake() {
   } else {
     console.warn("Earthquake sound not ready!");
   }
+  // if (chairMesh) {
+  //   BABYLON.Animation.CreateAndStartAnimation(
+  //     "fallChair",
+  //     chairMesh,
+  //     "rotation",
+  //     30,
+  //     30,
+  //     chairMesh.rotation.clone(),
+  //     new BABYLON.Vector3(Math.PI / 2, chairMesh.rotation.y, 0),
+  //     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+  //   );
+  // }
 
   frontText.text = "Drop, Cover and Hold On";
   frontText.color = "red";
@@ -320,6 +351,10 @@ function startEarthquake() {
       if (plantMesh) {
         plantMesh.rotation.x += (Math.random() - 0.5) * 0.05;
         plantMesh.rotation.z += (Math.random() - 0.5) * 0.05;
+      }
+      if (chairMesh) {
+        chairMesh.position.x += (Math.random() - 0.5) * 0.1;
+        chairMesh.position.z += (Math.random() - 0.5) * 0.1;
       }
     }
   }, 50);
