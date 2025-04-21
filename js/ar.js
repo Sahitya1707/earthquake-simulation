@@ -157,6 +157,23 @@ BABYLON.SceneLoader.Append(
   }
 );
 
+// table boundary
+
+let tableBoundary = BABYLON.MeshBuilder.CreateGround(
+  "tableBoundary",
+  {
+    width: 2.5,
+    height: 1.5,
+  },
+  scene
+);
+tableBoundary.position = new BABYLON.Vector3(0, 0.01, 0.5); // slightly above floor
+const glowMat = new BABYLON.StandardMaterial("glowMat", scene);
+glowMat.emissiveColor = new BABYLON.Color3.Yellow();
+glowMat.alpha = 0.5;
+tableBoundary.material = glowMat;
+tableBoundary.isVisible = false;
+
 // adding other modal
 
 // adding other modal
@@ -298,6 +315,8 @@ button();
 
 function startEarthquake() {
   isEarthquake = true;
+  tableBoundary.isVisible = true;
+
   const activeCamera = scene.activeCamera;
   debriefPlane.isVisible = false;
   dustParticles.start();
@@ -383,6 +402,8 @@ function startEarthquake() {
   }, 500);
 
   setTimeout(() => {
+    tableBoundary.isVisible = false;
+
     isEarthquake = false;
     clearInterval(shakeTimer);
     emergencySound.stop();
